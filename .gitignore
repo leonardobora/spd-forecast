@@ -1,6 +1,7 @@
 *.xlsx
 ~$*.xlsx
 outputs/
+eda_forecast_vbr_ci_report.md
 .venv/
 __pycache__/
 *.py[cod]

@@ -129,11 +129,16 @@ def excel_serial_to_datetime(series: pd.Series) -> pd.Series:
 
 
 def coerce_mixed_date(series: pd.Series) -> pd.Series:
+    if pd.api.types.is_datetime64_any_dtype(series):
+        return pd.to_datetime(series, errors="coerce")
+
     numeric = pd.to_numeric(series, errors="coerce")
-    numeric_like = numeric.notna() & series.notna()
+    excel_serial_like = numeric.notna() & numeric.between(1, 60000)
     result = pd.Series(pd.NaT, index=series.index, dtype="datetime64[ns]")
-    result.loc[numeric_like] = excel_serial_to_datetime(series.loc[numeric_like])
-    result.loc[~numeric_like] = pd.to_datetime(series.loc[~numeric_like], errors="coerce", dayfirst=True)
+    result.loc[excel_serial_like] = excel_serial_to_datetime(series.loc[excel_serial_like])
+    result.loc[~excel_serial_like] = pd.to_datetime(
+        series.loc[~excel_serial_like], errors="coerce", dayfirst=True
+    )
     return result
 
 
@@ -238,7 +243,12 @@ def infer_usage(col: str) -> str:
 
 def is_forecast_relevant(col: str) -> bool:
     relevant = set().union(*EXPECTED_FIELDS.values())
-    return col in relevant or col.startswith("data_atual") or col.endswith("_dt")
+    return (
+        col in relevant
+        or col.startswith("data_atual")
+        or col.startswith("fase_opt")
+        or col.endswith("_dt")
+    )
 
 
 def step1_initial_inspection(bundle: DataBundle) -> str:
@@ -367,7 +377,9 @@ def step2_field_mapping(df: pd.DataFrame) -> tuple[str, pd.DataFrame]:
         )
     mapping = pd.DataFrame(rows)
 
-    data_atual_cols = [col for col in df.columns if col.startswith("data_atual")]
+    data_atual_cols = [
+        col for col in df.columns if col.startswith("data_atual") and not col.endswith("_dt")
+    ]
     answers = pd.DataFrame(
         [
             {"pergunta": "Existe campo de data prometida versus data realizada?", "resposta": "Parcial: ha `mes_de_fechamento` e campos `data_atual*`; nao foi identificado campo explicito de data realizada."},
@@ -820,7 +832,7 @@ def build_report(bundle: DataBundle, output_dir: Path) -> tuple[str, pd.DataFram
 
 def write_outputs(bundle: DataBundle, report: str, mapping: pd.DataFrame, opp: pd.DataFrame, output_dir: Path) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
-    (output_dir / "eda_forecast_vbr_ci_report.md").write_text(report, encoding="utf-8")
+    (output_dir / "eda_forecast_vbr_ci_report.md").write_text(report, encoding="utf-8-sig")
     bundle.clean.to_csv(output_dir / "base_item_limpa.csv", index=False, encoding="utf-8-sig")
     bundle.column_dictionary.to_csv(output_dir / "dicionario_colunas.csv", index=False, encoding="utf-8-sig")
     mapping.to_csv(output_dir / "mapeamento_campos.csv", index=False, encoding="utf-8-sig")
