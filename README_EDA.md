@@ -12,6 +12,7 @@ python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 python eda_forecast_vbr_ci.py --input-dir . --output-dir outputs
+python instability_metrics_vbr_ci.py --output-dir outputs
 ```
 
 ## Entradas esperadas
@@ -27,6 +28,8 @@ python eda_forecast_vbr_ci.py --input-dir . --output-dir outputs
 - `outputs/base_oportunidade_snapshot.csv`: base agregada por snapshot e oportunidade.
 - `outputs/dicionario_colunas.csv`: mapeamento de colunas originais para nomes internos.
 - `outputs/mapeamento_campos.csv`: classificacao de uso, cardinalidade e relevancia de cada coluna.
+- `outputs/instability_metrics_report.md`: metricas indiretas de instabilidade sem usar realizado.
+- `outputs/*.csv` adicionais de instabilidade: deslocamento de fechamento, variacao de probabilidade, variacao de valor, concentracao, rotatividade e duplicatas.
 
 ## Ressalva importante
 
