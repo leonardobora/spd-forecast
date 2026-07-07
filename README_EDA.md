@@ -13,6 +13,8 @@ python -m venv .venv
 pip install -r requirements.txt
 python eda_forecast_vbr_ci.py --input-dir . --output-dir outputs
 python instability_metrics_vbr_ci.py --output-dir outputs
+python analise_forecast_avancada.py
+streamlit run dashboard_forecast_vbr_ci.py
 ```
 
 ## Entradas esperadas
@@ -20,6 +22,7 @@ python instability_metrics_vbr_ci.py --output-dir outputs
 - Arquivos `.xlsx` na pasta informada por `--input-dir`.
 - Aba principal: `G-VDC  Forecast de Vendas`.
 - Cada arquivo e tratado como um snapshot mensal.
+- Os arquivos em `outputs/` nao sao versionados porque podem conter dados comerciais.
 
 ## Saidas geradas
 
@@ -30,6 +33,33 @@ python instability_metrics_vbr_ci.py --output-dir outputs
 - `outputs/mapeamento_campos.csv`: classificacao de uso, cardinalidade e relevancia de cada coluna.
 - `outputs/instability_metrics_report.md`: metricas indiretas de instabilidade sem usar realizado.
 - `outputs/*.csv` adicionais de instabilidade: deslocamento de fechamento, variacao de probabilidade, variacao de valor, concentracao, rotatividade e duplicatas.
+- `outputs/analise_forecast_avancada_report.md`: diagnostico avancado por etapas A-G, separando fatos, hipoteses e dados necessarios.
+- `outputs/analise_dicionario_operacional.csv`: dicionario operacional das colunas existentes.
+- `outputs/analise_distribuicoes_pipeline.csv`: distribuicoes de pipeline por fase, status, probabilidade, cliente e proprietario.
+- `outputs/analise_consistencia_comercial.csv`: flags comerciais para revisao, sem assumir erro.
+
+## Dashboard Streamlit
+
+O dashboard `dashboard_forecast_vbr_ci.py` usa `outputs/base_oportunidade_snapshot.csv`
+como unidade principal de analise e `outputs/base_item_limpa.csv` para contagens de
+itens/produtos.
+
+Antes de executar, coloque estes arquivos localmente em `outputs/`:
+
+- `outputs/base_oportunidade_snapshot.csv`
+- `outputs/base_item_limpa.csv`
+
+```powershell
+streamlit run dashboard_forecast_vbr_ci.py
+```
+
+Abas disponiveis:
+
+- Visao geral do pipeline por snapshot, fase, status e probabilidade.
+- Concentracao por cliente e proprietario.
+- Qualidade de campos de forecast e flags comerciais para revisao.
+- Historico parcial por oportunidade ao longo dos snapshots.
+- Tabela filtrada com download CSV.
 
 ## Ressalva importante
 
