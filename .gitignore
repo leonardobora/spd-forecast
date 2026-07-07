@@ -1,0 +1,7 @@
+*.xlsx
+~$*.xlsx
+outputs/
+.venv/
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
